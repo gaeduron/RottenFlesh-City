@@ -1,0 +1,37 @@
+import pygame, sys
+import pygame.locals
+ 
+pygame.init()
+ 
+ecran = pygame.display.set_mode((1280, 720))
+
+pygame.display.set_caption("Shmup!")
+ 
+clock = pygame.time.Clock()
+ 
+background1 = pygame.image.load('space.jpeg')
+background2 = pygame.image.load('space.jpeg')
+ 
+ordonnee_background1 = 0
+ordonnee_background2 = background1.get_height()
+ 
+while True:
+ 
+    ecran.blit(background1, (0,ordonnee_background1))
+    ecran.blit(background2, (0,ordonnee_background2))
+ 
+    pygame.display.update()
+ 
+    ordonnee_background1 -= 1
+    ordonnee_background2 -= 1
+ 
+    if ordonnee_background1 == -1 * background1.get_height():
+        ordonnee_background1 = ordonnee_background2 + background2.get_height()
+    if background2 == -1 * background2.get_height():
+        ordonnee_fond2 = ordonnee_background1 + background1.get_height()
+ 
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT or (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE):
+            sys.exit()
+ 
+    clock.tick(300)
