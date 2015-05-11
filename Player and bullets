@@ -2,7 +2,7 @@
 """
 Created on Wed Apr 22 12:36:06 2015
 
-@author: Gaetan Duron
+@author: kabiraduron
 """
 
 import pygame
@@ -19,7 +19,7 @@ class Player(pygame.sprite.Sprite):
 
     def __init__(self):
 
-        super( Player, self ).__init__()
+        super(Player, self).__init__()
         self.image = pygame.image.load('ship2.png')
         self.rect = self.image.get_rect()
         self.origin_x = self.rect.centerx
@@ -29,7 +29,7 @@ class Player(pygame.sprite.Sprite):
         self.tspeed = 0
         self.k_left = self.k_right = 0
 
-    def set_position( self, x, y ):
+    def set_position(self, x, y):
         self.rect.x = x - self.origin_x
         self.rect.y = y - self.origin_y
 
@@ -41,20 +41,32 @@ class Player(pygame.sprite.Sprite):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 bullet = Bullet()
                 print("pow")
-                bullet.rect.x = player.rect.x
-                bullet.rect.y = player.rect.y
-                active_object_list.add( bullet )
-                bullet_list.add( bullet )
+                bullet.rect.x = player.rect.centerx - 2
+                bullet.rect.y = player.rect.centery - 50
+                active_object_list.add(bullet)
+                bullet_list.add(bullet)
+
+
+class Mob(pygame.sprite.Sprite):
+
+    def __init__(self, color):
+
+        super().__init__()
+        self.image = pygame.Surface([20, 15])
+        self.image.fill(color)
+        self.rect = self.image.get_rect()
+
+
 class Bullet(pygame.sprite.Sprite):
 
     def __init__(self):
         super().__init__()
- 
+
         self.image = pygame.Surface([4, 10])
         self.image.fill(white)
- 
+
         self.rect = self.image.get_rect()
- 
+
     def update(self):
         self.rect.y -= 3
 
@@ -86,13 +98,13 @@ if ( __name__ == "__main__" ):
 
         clock = pygame.time.Clock()
         frames_per_second = 60
- 
+
         active_object_list = pygame.sprite.Group()
+        bullet_list = pygame.sprite.Group()
         player = Player()
         player.set_position(400, 700)
-        bullet_list = []
         active_object_list.add( player )
- 
+
         level_list = []
         level_list.append( Level_01( player ) )
  
@@ -101,7 +113,6 @@ if ( __name__ == "__main__" ):
  
         player.level = current_level
 
- 
         running = True
         
         while (running == True):
@@ -113,7 +124,7 @@ if ( __name__ == "__main__" ):
                     running = False
                 # Update 
             player.update( current_level.object_list, event )
-            bullet_list.bullet.update()
+            active_object_list.update()
             event = None
             current_level.update()
             # Logic
