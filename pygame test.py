@@ -19,5 +19,8 @@ if ( __name__ == "__main__" ):
         for event in pygame.event.get():
             if ( event.type == pygame.QUIT):
                 running = False
+            elif (event.key == pygame.locals.K_ESCAPE):
+                pygame.quit()
+                running = False 
                 
     pygame.quit()
