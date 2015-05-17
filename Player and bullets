@@ -1,0 +1,139 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Apr 22 12:36:06 2015
+
+@author: kabiraduron
+"""
+
+import pygame
+
+""" Couleurs """
+
+black = (0, 0, 1)
+white = (255, 255, 255)
+
+""" Class"""
+
+
+class Player(pygame.sprite.Sprite):
+
+    def __init__(self):
+
+        super(Player, self).__init__()
+        self.image = pygame.image.load('ship2.png')
+        self.rect = self.image.get_rect()
+        self.origin_x = self.rect.centerx
+        self.origin_y = self.rect.centery
+        self.pos = (self.rect.x)
+        self.speed = 10
+        self.tspeed = 0
+        self.k_left = self.k_right = 0
+
+    def set_position(self, x, y):
+        self.rect.x = x - self.origin_x
+        self.rect.y = y - self.origin_y
+
+    def update(self, collidable=pygame.sprite.Group(), event=None):
+
+        pos = pygame.mouse.get_pos()
+        self.rect.x = pos[0]
+        if (event != None):
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                bullet = Bullet()
+                print("pow")
+                bullet.rect.x = player.rect.centerx - 2
+                bullet.rect.y = player.rect.centery - 50
+                active_object_list.add(bullet)
+                bullet_list.add(bullet)
+
+
+class Mob(pygame.sprite.Sprite):
+
+    def __init__(self, color):
+
+        super().__init__()
+        self.image = pygame.Surface([20, 15])
+        self.image.fill(color)
+        self.rect = self.image.get_rect()
+
+
+class Bullet(pygame.sprite.Sprite):
+
+    def __init__(self):
+        super().__init__()
+
+        self.image = pygame.Surface([4, 10])
+        self.image.fill(white)
+
+        self.rect = self.image.get_rect()
+
+    def update(self):
+        self.rect.y -= 3
+
+class Level(object):
+    def __init__(self, player_object):
+        self.object_list = pygame.sprite.Group()
+        self.player_object = player_object
+
+    def update( self ):
+        self.object_list.update()
+ 
+    def draw( self, window ):
+        window.fill( black )
+        self.object_list.draw( window )
+
+class Level_01( Level ):
+ 
+        def __init__( self, player_object ):
+ 
+                super( Level_01, self ).__init__( player_object )
+
+if ( __name__ == "__main__" ):
+        pygame.init()
+ 
+        window_size = window_width, window_height = 1280, 800
+        window = pygame.display.set_mode( window_size, pygame.RESIZABLE )
+        pygame.mouse.set_visible(0)
+        pygame.display.set_caption("Shmup")
+
+        clock = pygame.time.Clock()
+        frames_per_second = 60
+
+        active_object_list = pygame.sprite.Group()
+        bullet_list = pygame.sprite.Group()
+        player = Player()
+        player.set_position(400, 700)
+        active_object_list.add( player )
+
+        level_list = []
+        level_list.append( Level_01( player ) )
+ 
+        current_level_number = 0
+        current_level = level_list[ current_level_number ]
+ 
+        player.level = current_level
+
+        running = True
+        
+        while (running == True):
+
+            for event in pygame.event.get():
+                if ( event.type == pygame.QUIT ) or \
+                ( event.type == pygame.KEYDOWN and \
+                ( event.key == pygame.K_ESCAPE or event.key == pygame.K_q ) ):                    
+                    running = False
+                # Update 
+            player.update( current_level.object_list, event )
+            active_object_list.update()
+            event = None
+            current_level.update()
+            # Logic
+            # Draw
+            current_level.draw(window)
+            active_object_list.draw(window)
+            # Framerate
+            clock.tick( frames_per_second )
+            # Update the screen
+            pygame.display.update()
+ 
+        pygame.quit()
