@@ -7,6 +7,7 @@ Created on Wed Apr 22 12:36:06 2015
 
 import pygame
 import random
+import math
 
 """ Couleurs """
 
@@ -51,53 +52,174 @@ class Player(pygame.sprite.Sprite):
         pos = pygame.mouse.get_pos()
         self.rect.x = pos[0] - 40
         if (event != None):
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                bullet = Bullet()
-                print("pow")
-                bullet.rect.x = player.rect.centerx - 2
-                bullet.rect.y = player.rect.centery - 50
+            if ( event.type == pygame.KEYDOWN ):
+                if event.key == pygame.K_SPACE:
+                    bullet = Bullet()
+                    print("pow")
+                    bullet.rect.x = player.rect.centerx - 2
+                    bullet.rect.y = player.rect.centery - 50
  ###               active_object_list.add(bullet)
-                current_level.object_list.add(bullet)
-                bullet_list.add(bullet)
+                    current_level.object_list.add(bullet)
+                    bullet_list.add(bullet)
 
 
 class Mob(pygame.sprite.Sprite):
 
-    def __init__(self, rdm_nbr):
+    def __init__(self, rdm_nbr, score):
 
         super().__init__()
 
-        if rdm_nbr == 1 or rdm_nbr == 2 or rdm_nbr == 0:
-            mob_sprite = 'mob1.png'
-        if rdm_nbr == 3 or rdm_nbr == 4:
-            mob_sprite = 'mob2.png'
-        if rdm_nbr == 5 or rdm_nbr == 6:
-            mob_sprite = 'mob3.png'
-        if rdm_nbr == 7 or rdm_nbr == 8:
-            mob_sprite = 'mob4.png'
-        if rdm_nbr == 9 or rdm_nbr == 10:
-            mob_sprite = 'mob5.png'
+        self.lives = 1
+
+        if rdm_nbr <= 10:
+
+            if score <= 20:
+                position = 1
+                mob_sprite = 'mob1.png'
+                self.comportement = 1
+                self.lives = 1
+                if rdm_nbr <=2:
+                    exp_sprite = 'exp1.png'
+                elif rdm_nbr > 2 and rdm_nbr <= 4:
+                    exp_sprite = 'exp2.png'
+                elif rdm_nbr > 4 and rdm_nbr <= 6:
+                    exp_sprite = 'exp3.png'
+                elif rdm_nbr > 6 and rdm_nbr <= 10:
+                    exp_sprite = 'exp4.png'
+            elif score > 20 and score <= 40:
+                position = 1
+                mob_sprite = 'mob2.png'
+                self.comportement = 2
+                self.lives = 1
+                if rdm_nbr <=2:
+                    exp_sprite = 'exp1.png'
+                elif rdm_nbr > 2 and rdm_nbr <= 4:
+                    exp_sprite = 'exp2.png'
+                elif rdm_nbr > 4 and rdm_nbr <= 6:
+                    exp_sprite = 'exp3.png'
+                elif rdm_nbr > 6 and rdm_nbr <= 10:
+                    exp_sprite = 'exp4.png'
+            elif score > 40 and score <= 60:
+                position = 2
+                mob_sprite = 'mob5.png'
+                self.comportement = 3
+                self.lives = 1
+                if rdm_nbr <=2:
+                    exp_sprite = 'exp1.png'
+                elif rdm_nbr > 2 and rdm_nbr <= 4:
+                    exp_sprite = 'exp2.png'
+                elif rdm_nbr > 4 and rdm_nbr <= 6:
+                    exp_sprite = 'exp3.png'
+                elif rdm_nbr > 6 and rdm_nbr <= 10:
+                    exp_sprite = 'exp4.png'
+            elif score > 60 and score <= 80:
+                position = 1
+                mob_sprite = 'mob3.png'
+                self.comportement = 4
+                self.lives = 2
+                if rdm_nbr <=2:
+                    exp_sprite = 'exp1.png'
+                elif rdm_nbr > 2 and rdm_nbr <= 4:
+                    exp_sprite = 'exp2.png'
+                elif rdm_nbr > 4 and rdm_nbr <= 6:
+                    exp_sprite = 'exp3.png'
+                elif rdm_nbr > 6 and rdm_nbr <= 10:
+                    exp_sprite = 'exp4.png'
+            elif score > 80 and score <= 100:
+                position = 1
+                mob_sprite = 'mob4.png'
+                self.comportement = 5
+                self.lives = 5
+                if rdm_nbr <=2:
+                    exp_sprite = 'expL.png'
+                elif rdm_nbr > 2 and rdm_nbr <= 4:
+                    exp_sprite = 'expL.png'
+                elif rdm_nbr > 4 and rdm_nbr <= 6:
+                    exp_sprite = 'expL.png'
+                elif rdm_nbr > 6 and rdm_nbr <= 10:
+                    exp_sprite = 'expL.png'
+            elif score > 100:
+                position = 1
+                mob_sprite = 'boss.png'
+                self.comportement = 6
+                self.lives = 50
+                exp_sprite = 'expL.png'
+                current_level.boss_spawn = 1
+                
+                
         
         self.image = pygame.image.load(mob_sprite).convert()
+        self.explosion = pygame.image.load(exp_sprite).convert()
         transparent = self.image.get_at((0,0))
         self.image.set_colorkey(transparent)
+        self.explosion.set_colorkey(transparent)
         self.rect = self.image.get_rect()
+
+        if position == 1:
+            self.rect.x = random.randrange(1280)
+            self.rect.y = -40
+
+        if position == 2:
+            self.rect.x = window_width / 2 + 250
+            self.rect.y = -50
         
 
-    def spawn(rdm_nbr):
-        if rdm_nbr <= 10:
-            mob = Mob(rdm_nbr)
- 
+    def spawn(rdm_nbr, score):
+        if current_level.boss_spawn == 0:
+            if current_level.score < 80:
+                if rdm_nbr <= 10:
+                    mob = Mob(rdm_nbr, score) 
+    
+                    mob_list.add(mob)
+                    current_level.object_list.add(mob)
+            else:
+                if rdm_nbr <= 3:
+                    mob = Mob(rdm_nbr, score) 
+    
+                    mob_list.add(mob)
+                    current_level.object_list.add(mob)
 
-            mob.rect.x = random.randrange(1280)
-            mob.rect.y = 40
- 
+    def death(self):
+        self.lives -= 1
 
-            mob_list.add(mob)
-            current_level.object_list.add(mob)
+        if self.lives == 0:
+            self.image = self.explosion
+        
 
-    def update(self):
-        self.rect.y += 2
+    def update(self, rdm_nbr):
+        if self.lives <= 0:
+
+            mob_list.remove(self)
+            current_level.object_list.remove(self)
+
+        if self.comportement == 1:
+            self.rect.y += 8
+
+        elif self.comportement == 2:
+            self.rect.y += 2
+
+            self.rect.x += 10 * math.sin(self.rect.y / 20) + 0.5
+
+        elif self.comportement == 3:
+            self.rect.y += 2
+
+            self.rect.x += 60 * math.sin(self.rect.y / 20) + 0.5
+
+        elif self.comportement == 4:
+            self.rect.y += 2
+            if current_level.score % 2 == 0:
+                self.rect.x += 8
+            else:
+                self.rect.x -= 8
+
+        elif self.comportement == 5:
+            self.rect.y +=2
+
+        elif self.comportement == 6:
+            self.rect.y +=1
+            
+                
+        
     
             
         
@@ -112,8 +234,11 @@ class Bullet(pygame.sprite.Sprite):
         self.image.fill(yellow)
 
         self.rect = self.image.get_rect()
+        self.sound = pygame.mixer.Sound("bulletsound.ogg")
+        self.sound.set_volume(0.4)
+        self.sound.play()
 
-    def update(self):
+    def update(self, rdm_nbr):
         self.rect.y -= 30
 
     def action(self):
@@ -122,12 +247,17 @@ class Bullet(pygame.sprite.Sprite):
             current_level.object_list.remove(bullet)
             print("clear")
 
-        block_hit_list = pygame.sprite.spritecollide(bullet, mob_list, True)
- 
+        block_hit_list = pygame.sprite.spritecollide(bullet, mob_list, False)
+       # print(block_hit_list)
         # For each block hit, remove the bullet and add to the score
         for block in block_hit_list:
+            self.sound = pygame.mixer.Sound("explosion.ogg")
+            self.sound.play()
+            block.death()
             bullet_list.remove(bullet)
             current_level.object_list.remove(bullet)
+            current_level.score += 1
+            print("score = ", current_level.score)
 
         
 class Level(object):
@@ -139,16 +269,20 @@ class Level(object):
         self.object_list = pygame.sprite.Group()
         self.player_object = player_object
         self.score = 0
+        self.boss_spawn = 0
+        self.sound = pygame.mixer.Sound("ironmaiden.ogg")
+        self.sound.play()
 
-    def update( self ):
-        self.object_list.update()
+    def update( self, rdm_nbr ):
+        self.object_list.update( rdm_nbr)
  
     def draw( self, window ):
         window.fill( black )
         self.object_list.draw( window )
 
     def random(self):
-        rdm_nbr = random.randint(0,201)
+
+        rdm_nbr = random.randint(0,101)
         return rdm_nbr
         
 
@@ -167,7 +301,7 @@ if ( __name__ == "__main__" ):
         pygame.init()
  
         window_size = window_width, window_height = 1280, 800
-        window = pygame.display.set_mode( window_size )
+        window = pygame.display.set_mode( window_size, pygame.RESIZABLE )
         pygame.mouse.set_visible(0)
         pygame.display.set_caption("Shmup")
 
@@ -191,6 +325,7 @@ if ( __name__ == "__main__" ):
 
         running = True
 
+
         """
  
                ___________GAME LOOP _________
@@ -205,20 +340,20 @@ if ( __name__ == "__main__" ):
                 ( event.key == pygame.K_ESCAPE or event.key == pygame.K_q ) ):                    
                     running = False
             # Update
-                
+            rdm_nbr = current_level.random()              
             player.update( current_level.object_list, event )
                                          ###active_object_list.update()
             event = None
-            current_level.update()
+            current_level.update(rdm_nbr)
 
             # Logic
 
             for bullet in bullet_list:
                 bullet.action()
             
-            rdm_nbr = current_level.random()
+            
             print(rdm_nbr)
-            Mob.spawn(rdm_nbr)
+            Mob.spawn(rdm_nbr, current_level.score)
 
             # Draw
 
