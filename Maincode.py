@@ -26,7 +26,11 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
 
         super(Player, self).__init__()
-        self.image = pygame.image.load('ship2.png')
+        self.image = pygame.image.load('ship3.png').convert()
+        self.explosion = pygame.image.load('expL.png') 
+        transp = self.image.get_at((0,0))
+        self.explosion.set_colorkey(transp)
+        self.image.set_colorkey(transp)
         self.rect = self.image.get_rect()
         self.origin_x = self.rect.centerx
         self.origin_y = self.rect.centery
@@ -34,7 +38,7 @@ class Player(pygame.sprite.Sprite):
         self.speed = 10
         self.tspeed = 0
         self.k_left = self.k_right = 0
-
+        self.lives = 3
         self.level = None
 
 
@@ -48,19 +52,27 @@ class Player(pygame.sprite.Sprite):
 
 
     def update(self, collidable=pygame.sprite.Group(), event=None):
-
+        if self.lives <= 0:
+            print("GAME OVER")
+            print(current_level.score)
+            pygame.quit()
         pos = pygame.mouse.get_pos()
         self.rect.x = pos[0] - 40
         if (event != None):
             if ( event.type == pygame.KEYDOWN ):
                 if event.key == pygame.K_SPACE:
                     bullet = Bullet()
-                    print("pow")
+                    #print("pow")
                     bullet.rect.x = player.rect.centerx - 2
                     bullet.rect.y = player.rect.centery - 50
  ###               active_object_list.add(bullet)
                     current_level.object_list.add(bullet)
                     bullet_list.add(bullet)
+    def hit(self):
+        self.lives -= 1
+        
+        if self.lives == 0:
+           self.image = self.explosion
 
 
 class Mob(pygame.sprite.Sprite):
@@ -138,12 +150,12 @@ class Mob(pygame.sprite.Sprite):
                     exp_sprite = 'expL.png'
                 elif rdm_nbr > 6 and rdm_nbr <= 10:
                     exp_sprite = 'expL.png'
-            elif score > 100:
-                position = 1
+            elif score >= 100 and len(mob_list) == 0:
+                position = 3
                 mob_sprite = 'boss.png'
                 self.comportement = 6
                 self.lives = 50
-                exp_sprite = 'expL.png'
+                exp_sprite = 'expL2.png'
                 current_level.boss_spawn = 1
                 
                 
@@ -160,8 +172,13 @@ class Mob(pygame.sprite.Sprite):
             self.rect.y = -40
 
         if position == 2:
-            self.rect.x = window_width / 2 + 250
+            self.rect.x = window_width / 2 + 300
             self.rect.y = -50
+
+        if position == 3:
+            self.rect.x = window_width / 2 - 100
+            self.rect.y = -50
+            
         
 
     def spawn(rdm_nbr, score):
@@ -172,8 +189,14 @@ class Mob(pygame.sprite.Sprite):
     
                     mob_list.add(mob)
                     current_level.object_list.add(mob)
-            else:
+            elif current_level.score < 100:
                 if rdm_nbr <= 3:
+                    mob = Mob(rdm_nbr, score) 
+    
+                    mob_list.add(mob)
+                    current_level.object_list.add(mob)
+            elif score >= 100 and len(mob_list) == 0:
+                if rdm_nbr <= 10:
                     mob = Mob(rdm_nbr, score) 
     
                     mob_list.add(mob)
@@ -187,6 +210,9 @@ class Mob(pygame.sprite.Sprite):
         
 
     def update(self, rdm_nbr):
+        if self.rect.y >  800:
+            mob_list.remove(self)
+            current_level.object_list.remove(self)
         if self.lives <= 0:
 
             mob_list.remove(self)
@@ -217,10 +243,13 @@ class Mob(pygame.sprite.Sprite):
 
         elif self.comportement == 6:
             self.rect.y +=1
+
+
+    def collide(self, player):
+        if pygame.sprite.collide_rect(self, player) == True:
+            self.death()
+            player.hit()
             
-                
-        
-    
             
         
 
@@ -245,9 +274,9 @@ class Bullet(pygame.sprite.Sprite):
         if bullet.rect.y < -10:
             bullet_list.remove(bullet)
             current_level.object_list.remove(bullet)
-            print("clear")
+            #print("clear")
 
-        block_hit_list = pygame.sprite.spritecollide(bullet, mob_list, False)
+        block_hit_list = pygame.sprite.spritecollide(self, mob_list, False)
        # print(block_hit_list)
         # For each block hit, remove the bullet and add to the score
         for block in block_hit_list:
@@ -257,7 +286,7 @@ class Bullet(pygame.sprite.Sprite):
             bullet_list.remove(bullet)
             current_level.object_list.remove(bullet)
             current_level.score += 1
-            print("score = ", current_level.score)
+            #print("score = ", current_level.score)
 
         
 class Level(object):
@@ -269,20 +298,32 @@ class Level(object):
         self.object_list = pygame.sprite.Group()
         self.player_object = player_object
         self.score = 0
+        self.score_txt = "0"
         self.boss_spawn = 0
         self.sound = pygame.mixer.Sound("ironmaiden.ogg")
         self.sound.play()
+        self.font = pygame.font.SysFont("FreeMono", 50)
+        self.text = self.font.render(self.score_txt, True, white)
 
     def update( self, rdm_nbr ):
         self.object_list.update( rdm_nbr)
+        self.score_txt = str(self.score)
+        self.text = self.font.render(self.score_txt, True, white) 
+        print(self.score_txt)
+        #print(mob_list)
+        if self.boss_spawn == 1 and len(mob_list) == 0:
+             print("!!! YOU WIN !!!")
+             print("your score is : ", self.score)
+             pygame.quit()
  
     def draw( self, window ):
         window.fill( black )
         self.object_list.draw( window )
+        window.blit(self.text, (60 - self.text.get_width() // 2 , 40 - self.text.get_height() // 2 ))
 
     def random(self):
 
-        rdm_nbr = random.randint(0,101)
+        rdm_nbr = random.randint(0,201)
         return rdm_nbr
         
 
@@ -351,13 +392,17 @@ if ( __name__ == "__main__" ):
             for bullet in bullet_list:
                 bullet.action()
             
+            for mob in mob_list:
+                mob.collide(player)
             
-            print(rdm_nbr)
+            
+            #print(rdm_nbr)
             Mob.spawn(rdm_nbr, current_level.score)
 
             # Draw
 
             current_level.draw(window)
+            
                                          ###active_object_list.draw(window)
 
             # Framerate
@@ -365,7 +410,7 @@ if ( __name__ == "__main__" ):
             clock.tick( frames_per_second )
 
             # Update the screen
-            
+            pygame.display.flip()
             pygame.display.update()
  
         pygame.quit()
